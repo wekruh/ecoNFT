@@ -1,38 +1,361 @@
-.App {
-  text-align: center;
+/* Reset and Base Styles */
+* {
+  margin: 5;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 400;
+  color: #3D550C;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+h1 {
+  font-weight: 700;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+button {
+  font-weight: 700;
+}
+
+/* Global Utilities */
+.modal-open {
+  background-color: rgba(0, 0, 0, 0.5);
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #3D550C;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #F1F1F1;
+}
+
+/* Header */
+header {
+  background-color: #81B622;
+  color: white;
+  padding: 10px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  height: 100px;
+  position: relative;
+}
+
+header .logo img {
+  height: 80px;
+  width: auto;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 15px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: #3D550C;
+}
+
+#info-section {
+  text-align: center; /* Center the entire section */
+  padding: 40px 20px;
+  background-color: #f4f4f4;
+}
+
+#info-section ul {
+  list-style: none; /* Remove default bullets */
+  padding: 0; /* Remove default padding */
+  margin: 0 auto; /* Center the list horizontally */
+  display: inline-block; /* Shrink-wrap the list to center it */
+  text-align: left; /* Align text within the list to the left */
+}
+
+#info-section li {
+  position: relative; /* Allow custom bullet positioning */
+  padding-left: 30px; /* Add space for the custom bullet */
+  margin-bottom: 10px; /* Add spacing between items */
+  font-size: 16px;
+  color: #555;
+}
+
+#info-section li::before {
+  content: "✅"; /* Use a custom marker */
+  position: absolute; /* Position it relative to the list item */
+  left: 0; /* Align marker to the start of the list item */
+  top: 0;
+  color: #81B622; /* Green color for the marker */
+}
+
+#why-choose-us {
+  text-align: center; /* Center the entire section */
+  padding: 40px 20px;
+  background-color: #f4f4f4;
+}
+
+#why-choose-us ul {
+  list-style: none; /* Remove default bullets */
+  padding: 0; /* Remove default padding */
+  margin: 0 auto; /* Center the list horizontally */
+  display: inline-block; /* Shrink-wrap the list to center it */
+  text-align: left; /* Align text within the list to the left */
+}
+
+#why-choose-us li {
+  position: relative; /* Allow custom bullet positioning */
+  padding-left: 30px; /* Add space for the custom bullet */
+  margin-bottom: 10px; /* Add spacing between items */
+  font-size: 16px;
+  color: #555;
+}
+
+#why-choose-us li::before {
+  content: "✅"; /* Use a custom marker */
+  position: absolute; /* Position it relative to the list item */
+  left: 0; /* Align marker to the start of the list item */
+  top: 0;
+  color: #81B622; /* Green color for the marker */
+}
+
+#connect-wallet {
+  position: absolute;
+  right: 20px;
+  background-color: #B9E09B;
+  color: #3D550C;
+  border: 2px solid #B9E09B;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+#connect-wallet:hover {
+  background-color: #3D550C;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Hero Section */
+#hero {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f4f4f4;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+#hero h1 {
+  font-size: 48px;
+  font-weight: bold;
+  color: #3D550C;
+  margin-bottom: 20px;
+}
+
+#hero p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+/* Call to Action Buttons */
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cta-button {
+  padding: 10px 20px;
+  background-color: #81B622;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button.secondary {
+  background-color: #59981A;
+}
+
+.cta-button:hover {
+  background-color: #3D550C;
+}
+
+/* Content Sections */
+section {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+section h2 {
+  font-size: 36px;
+  color: #3D550C;
+  margin-bottom: 20px;
+}
+
+/* Features Section */
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.feature {
+  width: 300px;
+  text-align: left;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature h3 {
+  font-size: 24px;
+  color: #3D550C;
+  margin-bottom: 10px;
+}
+
+.feature p {
+  font-size: 16px;
+  color: #555;
+}
+
+/* NFT Cards */
+.nft-cards,
+.nft-mint-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.nft-card,
+.mint-card {
+  width: 250px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nft-card img,
+.mint-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.nft-card h3,
+.mint-card h3 {
+  margin: 15px 0;
+}
+
+.nft-card button,
+.mint-card button {
+  margin: 10px 5px; /* Add vertical and horizontal spacing */
+  padding: 10px 15px;
+  border: none;
+  background-color: #81b622;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.nft-card button:hover,
+.mint-card button:hover {
+  background-color: #59981a;
+}
+
+/* Modals */
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  width: 350px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  color: #3D550C;
+  margin-bottom: 20px;
+}
+
+.modal-content input {
+  width: 80%;
+  margin: 10px auto;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.modal-content button {
+  padding: 10px 20px;
+  background-color: #81B622;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background-color: #59981a;
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #2E7D32;
+  transform: scale(1.2);
+}
+
+/* Footer */
+footer {
+  background-color: #3D550C;
+  color: white;
+  padding: 10px;
+  text-align: center;
 }
