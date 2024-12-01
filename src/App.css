@@ -73,63 +73,63 @@ nav ul li a:hover {
 }
 
 #info-section {
-  text-align: center; /* Center the entire section */
+  text-align: center;
   padding: 40px 20px;
   background-color: #f4f4f4;
 }
 
 #info-section ul {
-  list-style: none; /* Remove default bullets */
-  padding: 0; /* Remove default padding */
-  margin: 0 auto; /* Center the list horizontally */
-  display: inline-block; /* Shrink-wrap the list to center it */
-  text-align: left; /* Align text within the list to the left */
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  display: inline-block;
+  text-align: left;
 }
 
 #info-section li {
-  position: relative; /* Allow custom bullet positioning */
-  padding-left: 30px; /* Add space for the custom bullet */
-  margin-bottom: 10px; /* Add spacing between items */
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 10px;
   font-size: 16px;
   color: #555;
 }
 
 #info-section li::before {
-  content: "✅"; /* Use a custom marker */
-  position: absolute; /* Position it relative to the list item */
-  left: 0; /* Align marker to the start of the list item */
+  content: "✅";
+  position: absolute;
+  left: 0;
   top: 0;
-  color: #81B622; /* Green color for the marker */
+  color: #81B622;
 }
 
 #why-choose-us {
-  text-align: center; /* Center the entire section */
+  text-align: center;
   padding: 40px 20px;
   background-color: #f4f4f4;
 }
 
 #why-choose-us ul {
-  list-style: none; /* Remove default bullets */
-  padding: 0; /* Remove default padding */
-  margin: 0 auto; /* Center the list horizontally */
-  display: inline-block; /* Shrink-wrap the list to center it */
-  text-align: left; /* Align text within the list to the left */
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  display: inline-block;
+  text-align: left;
 }
 
 #why-choose-us li {
-  position: relative; /* Allow custom bullet positioning */
-  padding-left: 30px; /* Add space for the custom bullet */
-  margin-bottom: 10px; /* Add spacing between items */
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 10px;
   font-size: 16px;
   color: #555;
 }
 
 #why-choose-us li::before {
-  content: "✅"; /* Use a custom marker */
-  position: absolute; /* Position it relative to the list item */
-  left: 0; /* Align marker to the start of the list item */
+  content: "✅";
+  position: absolute;
+  left: 0;
   top: 0;
-  color: #81B622; /* Green color for the marker */
+  color: #81B622;
 }
 
 #connect-wallet {
@@ -268,7 +268,7 @@ section h2 {
 
 .nft-card button,
 .mint-card button {
-  margin: 10px 5px; /* Add vertical and horizontal spacing */
+  margin: 10px 5px;
   padding: 10px 15px;
   border: none;
   background-color: #81b622;
@@ -358,4 +358,235 @@ footer {
   color: white;
   padding: 10px;
   text-align: center;
+}
+
+/* LeaseNFT.css */
+
+/* LeaseNFT Page Header */
+.lease-nft-page header {
+  background-color: #81B622;
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 120px;
+}
+
+.lease-nft-page header .logo img {
+  height: 80px;
+  width: auto;
+}
+
+.lease-nft-page nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 25px;
+}
+
+.lease-nft-page nav ul li a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.lease-nft-page nav ul li a:hover {
+  color: #3D550C;
+}
+
+/* LeaseNFT Page Footer */
+.lease-nft-page footer {
+  background-color: #3D550C;
+  color: white;
+  padding: 20px 40px;
+  text-align: center;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lease-nft-page footer p {
+  font-size: 16px;
+}
+
+.nft-list {
+  overflow-y: scroll;
+  max-height: 400px;
+  margin-bottom: 20px;
+}
+
+.nft-item {
+  padding: 15px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+.nft-item:hover {
+  background-color: #f1f1f1;
+}
+
+.nft-item img {
+  width: 100px;
+  margin-right: 10px;
+}
+
+.lease-details {
+  margin-top: 20px;
+}
+
+.lease-details input {
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.lease-details button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.lease-details button:hover {
+  background-color: #45a049;
+}
+
+.nft-cards-container {
+  overflow-y: scroll;
+  max-height: 500px;
+  margin-top: 20px;
+}
+
+.nft-cards-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nft-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nft-card img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card-details {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.card-details h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.card-details input {
+  width: 80%;
+  padding: 8px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.card-details button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.card-details button:hover {
+  background-color: #45a049;
+}
+
+/* LeaseNFT Card Styles */
+.lease-nft-card {
+  display: flex;
+  flex-direction: row; 
+  width: 100%;
+  max-width: 1400px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.lease-nft-card:hover {
+  background-color: #f9f9f9;
+  transform: translateY(-10px);
+}
+
+.lease-nft-card img {
+  width: 180px; 
+  height: auto;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-right: 20px; 
+}
+
+.lease-nft-card .card-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  flex: 1;
+}
+
+.lease-nft-card h3 {
+  font-size: 20px;
+  color: #3D550C;
+  margin-top: 0;
+  text-align: center; 
+}
+
+.lease-nft-card p {
+  font-size: 14px;
+  color: #555;
+  text-align: center; 
+  margin-bottom: 10px;
+}
+
+.lease-nft-card button {
+  padding: 12px 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  max-width: 200px; 
+  width: 100%;
+  align-self: center; 
+}
+
+.lease-nft-card button:hover {
+  background-color: #45a049;
 }

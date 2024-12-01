@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../App.css";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Transaction, Connection, Keypair } from "@solana/web3.js";
 
 const ManageNFTs = () => {
   const [showSellModal, setShowSellModal] = useState(false);
@@ -11,6 +11,7 @@ const ManageNFTs = () => {
   const [leaseDays, setLeaseDays] = useState("");
   const [walletConnected, setWalletConnected] = useState(false); // Tracks wallet connection status
   const [walletAddress, setWalletAddress] = useState(""); // Stores the connected wallet address
+  const [userBalance, setUserBalance] = useState(null); // To track user's SOL balance
 
   // Check if Phantom Wallet is installed
   const isPhantomInstalled = () => {
@@ -30,6 +31,8 @@ const ManageNFTs = () => {
       setWalletConnected(true);
       setWalletAddress(address.toString());
       alert(`Wallet connected: ${address.toString()}`);
+      // Fetch and set user's balance
+      await updateBalance(address);
     } catch (err) {
       console.error("Error connecting to Phantom Wallet:", err);
       alert("Failed to connect wallet. Please try again.");
@@ -40,7 +43,15 @@ const ManageNFTs = () => {
   const disconnectWallet = () => {
     setWalletConnected(false);
     setWalletAddress("");
+    setUserBalance(null); // Reset balance on disconnect
     alert("Wallet disconnected!");
+  };
+
+  // Fetch user's SOL balance
+  const updateBalance = async (address) => {
+    const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+    const balance = await connection.getBalance(address);
+    setUserBalance(balance / 1e9); // Convert lamports to SOL
   };
 
   // Example owned NFTs
@@ -66,9 +77,76 @@ const ManageNFTs = () => {
   const closeLeaseModal = () => setShowLeaseModal(false);
 
   // Handle Sell Confirmation
-  const handleSell = () => {
-    alert(`Sold ${currentNFT.name} for $${sellPrice}!`);
-    closeSellModal();
+  const handleSell = async () => {
+    if (!walletConnected) {
+      alert("Please connect your wallet before proceeding with the transaction.");
+      return;
+    }
+
+    try {
+      // Create a connection to Solana devnet
+      const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+
+      // Get the public key from Phantom Wallet (user's connected wallet)
+      const payerPublicKey = new PublicKey(walletAddress);
+
+      // Define the recipient's public key (for example, your static wallet or another address)
+      const recipientAddress = payerPublicKey; // For this demo, it's the same wallet. Replace with another address if needed
+
+      // Fetch the recent blockhash to include in the transaction
+      const { blockhash } = await connection.getLatestBlockhash();
+
+      // Convert SOL to lamports (1 SOL = 1 billion lamports)
+      const lamports = parseFloat(sellPrice) * 1e9; // Ensure the price is converted to lamports
+
+      // Check if user has enough balance
+      const userBalanceInLamports = await connection.getBalance(payerPublicKey);
+      if (userBalanceInLamports < lamports) {
+        alert("Insufficient balance. Please check your balance.");
+        return;
+      }
+
+      // Create the transaction
+      const transaction = new Transaction({
+        recentBlockhash: blockhash,
+        feePayer: payerPublicKey,
+      }).add(
+        SystemProgram.transfer({
+          fromPubkey: payerPublicKey,
+          toPubkey: recipientAddress,
+          lamports: lamports, // Use the converted lamport value
+        })
+      );
+
+      // Log the transaction for debugging purposes
+      console.log("Transaction created:", transaction);
+
+      // Sign the transaction using Phantom Wallet
+      const signedTransaction = await window.solana.signTransaction(transaction);
+
+      // Send the signed transaction to the network
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+
+      // Wait for the transaction confirmation
+      const confirmation = await connection.confirmTransaction(signature, "confirmed");
+
+      if (confirmation.value.err) {
+        console.error("Transaction failed:", confirmation.value.err);
+        alert("Transaction failed. Please try again.");
+      } else {
+        console.log("Transaction confirmed:", confirmation);
+        alert(`Successfully sold ${currentNFT.name} and transferred ${sellPrice} SOL!`);
+        
+        // After the transaction, update the balance
+        await updateBalance(payerPublicKey);
+
+        closeSellModal();
+      }
+
+    } catch (err) {
+      console.error("Error during the sell transaction:", err);
+      alert("Failed to process the transaction. Please try again.");
+    }
   };
 
   // Handle Lease Confirmation
@@ -94,6 +172,7 @@ const ManageNFTs = () => {
             <li><a href="/">Home</a></li>
             <li><a href="/mint-nfts">Mint NFTs</a></li>
             <li><a href="/manage-nfts">Manage NFTs</a></li>
+            <li><a href="/lease-nft">Rent NFTs</a></li>
           </ul>
         </nav>
         <button id="connect-wallet" onClick={walletConnected ? disconnectWallet : connectWallet}>
@@ -137,7 +216,7 @@ const ManageNFTs = () => {
             <h2>Sell {currentNFT.name}</h2>
             <input
               type="number"
-              placeholder="Enter price"
+              placeholder="Enter price (SOL)"
               value={sellPrice}
               onChange={(e) => setSellPrice(e.target.value)}
             />
@@ -148,39 +227,38 @@ const ManageNFTs = () => {
 
       {/* Lease Modal */}
       {showLeaseModal && (
-  <div
-    className="modal"
-    onClick={(e) => e.target === e.currentTarget && closeLeaseModal()} // Close modal on outside click
-  >
-    <div className="modal-content">
-      <span className="close-btn" onClick={closeLeaseModal}>
-        &times;
-      </span>
-      <h2>Lease {currentNFT?.name}</h2>
-      <input
-        type="number"
-        placeholder="Daily rent price"
-        value={leasePrice}
-        onChange={(e) => setLeasePrice(e.target.value)}
-      />
-      <input
-        type="number"
-        placeholder="Number of days"
-        value={leaseDays}
-        onChange={(e) => setLeaseDays(e.target.value)}
-      />
-      <button onClick={handleLease}>Lease</button>
-    </div>
-  </div>
-)}
-
-
-      {/* Footer */}
-      <footer>
-        <p>&copy; 2024 EcoNFT Energy. All rights reserved.</p>
-      </footer>
-    </div>
-  );
-};
-
-export default ManageNFTs;
+        <div
+          className="modal"
+          onClick={(e) => e.target === e.currentTarget && closeLeaseModal()} // Close modal
+          >
+            <div className="modal-content">
+              <span className="close-btn" onClick={closeLeaseModal}>
+                &times;
+              </span>
+              <h2>Lease {currentNFT?.name}</h2>
+              <input
+                type="number"
+                placeholder="Daily rent price"
+                value={leasePrice}
+                onChange={(e) => setLeasePrice(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Number of days"
+                value={leaseDays}
+                onChange={(e) => setLeaseDays(e.target.value)}
+              />
+              <button onClick={handleLease}>Lease</button>
+            </div>
+          </div>
+        )}
+  
+        {/* Footer */}
+        <footer>
+          <p>&copy; 2024 EcoNFT Energy. All rights reserved.</p>
+        </footer>
+      </div>
+    );
+  };
+  
+  export default ManageNFTs;

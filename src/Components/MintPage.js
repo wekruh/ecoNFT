@@ -116,6 +116,7 @@ function MintPage() {
             <li><a href="/">Home</a></li>
             <li><a href="/mint-nfts">Mint NFTs</a></li>
             <li><a href="/manage-nfts">Manage NFTs</a></li>
+            <li><a href="/lease-nft">Rent NFTs</a></li>
           </ul>
         </nav>
         <button id="connect-wallet" onClick={walletConnected ? disconnectWallet : connectWallet}>
