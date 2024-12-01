@@ -1,19 +1,24 @@
 import React, { useState } from "react";
 import "../App.css";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Transaction, SystemProgram, Connection } from "@solana/web3.js";
+import { Buffer } from "buffer"; // Import Buffer polyfill
+
+// Make Buffer globally available
+window.Buffer = Buffer;
 
 function MintPage() {
-  const [walletConnected, setWalletConnected] = useState(false); // Tracks wallet connection status
-  const [walletAddress, setWalletAddress] = useState(""); // Stores the connected wallet address
-  const [showMintModal, setShowMintModal] = useState(false); // Tracks modal visibility
-  const [nftType, setNftType] = useState(""); // Stores the selected NFT type
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [showMintModal, setShowMintModal] = useState(false);
+  const [nftType, setNftType] = useState("");
 
-  // Check if Phantom Wallet is installed
+  // Use a direct RPC URL for devnet (use this instead of clusterApiUrl("devnet"))
+  const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+
   const isPhantomInstalled = () => {
     return window?.solana?.isPhantom;
   };
 
-  // Connect to Phantom Wallet
   const connectWallet = async () => {
     if (!isPhantomInstalled()) {
       alert("Phantom Wallet is not installed. Please install it from https://phantom.app/");
@@ -21,7 +26,7 @@ function MintPage() {
     }
 
     try {
-      const response = await window.solana.connect(); // Requests wallet connection
+      const response = await window.solana.connect();
       const address = new PublicKey(response.publicKey.toString());
       setWalletConnected(true);
       setWalletAddress(address.toString());
@@ -32,14 +37,12 @@ function MintPage() {
     }
   };
 
-  // Disconnect Wallet
   const disconnectWallet = () => {
     setWalletConnected(false);
     setWalletAddress("");
     alert("Wallet disconnected!");
   };
 
-  // Open Mint Modal
   const openMintModal = (type) => {
     if (!walletConnected) {
       alert("Please connect your wallet before minting an NFT.");
@@ -49,26 +52,64 @@ function MintPage() {
     setShowMintModal(true);
   };
 
-  // Close Mint Modal
   const closeMintModal = () => {
     setShowMintModal(false);
     setNftType("");
   };
 
   // Confirm Mint Action
-  const confirmMint = () => {
-    alert(`Successfully minted a ${nftType}!`);
-    closeMintModal();
+  const confirmMint = async () => {
+    try {
+      // Define the recipient address
+      const recipientAddress = new PublicKey("6CV1KuzTuH7AGzdqqbqrBjfkzriSsLBEQQF93GGHX619");
+
+      // Fetch the latest blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+
+      // Create the transaction and set the recentBlockhash
+      const transaction = new Transaction({
+        recentBlockhash: blockhash,  // Set the recent blockhash
+        feePayer: window.solana.publicKey,  // Set fee payer
+      }).add(
+        SystemProgram.transfer({
+          fromPubkey: window.solana.publicKey,
+          toPubkey: recipientAddress,
+          lamports: 0.5 * 1e9, // 0.5 SOL in lamports (1 SOL = 1 billion lamports)
+        })
+      );
+
+      // Check if Phantom is connected and has a public key
+      if (!window.solana.publicKey) {
+        throw new Error("Phantom wallet is not connected properly.");
+      }
+
+      // Send the transaction using Phantom wallet
+      const { signature } = await window.solana.signAndSendTransaction(transaction);
+
+      // Check if the signature is valid
+      if (!signature) {
+        throw new Error("Failed to get a valid transaction signature.");
+      }
+
+      // Confirm transaction
+      const confirmation = await connection.confirmTransaction(signature, "confirmed");
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed.");
+      }
+
+      alert(`Successfully minted a ${nftType} and sent 0.5 SOL to the recipient!`);
+      closeMintModal();
+    } catch (err) {
+      console.error("Error confirming mint:", err);
+      alert(`Failed to send SOL: ${err.message}`);
+    }
   };
 
   return (
     <div>
       <header>
         <div className="logo">
-        <img
-  src={`${process.env.PUBLIC_URL}/images/logoo.png`}
-  alt="EcoNFT Energy Logo"
-/>
+          <img src={`${process.env.PUBLIC_URL}/images/logoo.png`} alt="EcoNFT Energy Logo" />
         </div>
         <nav>
           <ul>
@@ -82,51 +123,41 @@ function MintPage() {
         </button>
       </header>
 
-      {/* Hero Section */}
       <section id="hero">
         <h1>Mint Your Own Renewable Energy NFTs</h1>
         <p>Choose your favorite renewable energy asset and mint it as an NFT!</p>
       </section>
 
-      {/* Mint NFTs Section */}
       <section id="mint-nfts">
         <h2>Mint Energy NFTs</h2>
         <div className="nft-mint-options">
           <div className="mint-card">
-          <img src={`${process.env.PUBLIC_URL}/images/solar-panel.png`} alt="Solar Panel NFT" />
+            <img src={`${process.env.PUBLIC_URL}/images/solar-panel.png`} alt="Solar Panel NFT" />
             <h3>Solar Panel NFT</h3>
-            <button
-              className="mint-button"
-              onClick={() => openMintModal("Solar Panel NFT")}
-            >
+            <button className="mint-button" onClick={() => openMintModal("Solar Panel NFT")}>
               Mint Solar Panel NFT
             </button>
           </div>
           <div className="mint-card">
-          <img src={`${process.env.PUBLIC_URL}/images/wind-turbine.png`} alt="Wind Turbine NFT" />            <h3>Wind Turbine NFT</h3>
-            <button
-              className="mint-button"
-              onClick={() => openMintModal("Wind Turbine NFT")}
-            >
+            <img src={`${process.env.PUBLIC_URL}/images/wind-turbine.png`} alt="Wind Turbine NFT" />
+            <h3>Wind Turbine NFT</h3>
+            <button className="mint-button" onClick={() => openMintModal("Wind Turbine NFT")}>
               Mint Wind Turbine NFT
             </button>
           </div>
         </div>
       </section>
 
-      {/* Mint Modal */}
       {showMintModal && (
         <div
           id="mint-modal"
           className="modal"
           onClick={(e) => {
-            if (e.target === e.currentTarget) closeMintModal(); // Close modal when clicking outside
+            if (e.target === e.currentTarget) closeMintModal();
           }}
         >
           <div className="modal-content">
-            <span className="close-btn" onClick={closeMintModal}>
-              &times;
-            </span>
+            <span className="close-btn" onClick={closeMintModal}>&times;</span>
             <h2>Confirm Mint</h2>
             <p>Are you sure you want to mint a {nftType}?</p>
             <div className="modal-buttons">
@@ -141,7 +172,6 @@ function MintPage() {
         </div>
       )}
 
-      {/* Footer */}
       <footer>
         <p>&copy; 2024 EcoNFT Energy. All rights reserved.</p>
       </footer>
