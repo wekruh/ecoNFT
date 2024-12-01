@@ -1,19 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { PublicKey, Connection } from "@solana/web3.js";
 import "../App.css";
-import { PublicKey, SystemProgram, Transaction, Connection } from "@solana/web3.js";
 
 const LeaseNFT = () => {
   const [showLeaseModal, setShowLeaseModal] = useState(false);
   const [currentNFT, setCurrentNFT] = useState(null);
-  const [leasePrice, setLeasePrice] = useState("");
-  const [leaseDays, setLeaseDays] = useState("");
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
   const [userBalance, setUserBalance] = useState(null);
+  const [leasePrice, setLeasePrice] = useState(0.5); // Default lease price in SOL
+  const [leaseDays, setLeaseDays] = useState(1); // Default lease duration
+
+  const location = useLocation();
+  const leaseData = location.state || {};
+
+  // leaseData'dan leasePrice ve leaseDays değerlerini alıyoruz
+  useEffect(() => {
+    if (leaseData) {
+      if (leaseData.leasePrice) setLeasePrice(leaseData.leasePrice);
+      if (leaseData.leaseDays) setLeaseDays(leaseData.leaseDays);
+    }
+  }, [leaseData]);
 
   const isPhantomInstalled = () => window?.solana?.isPhantom;
 
-  // Connect wallet to Phantom
+  // Cüzdanı bağlama işlemi
   const connectWallet = async () => {
     if (!isPhantomInstalled()) {
       alert("Phantom Wallet is not installed. Please install it from https://phantom.app/");
@@ -26,13 +38,14 @@ const LeaseNFT = () => {
       setWalletConnected(true);
       setWalletAddress(address.toString());
       alert(`Wallet connected: ${address.toString()}`);
-      await updateBalance(address);
+      await updateBalance(address); // Bakiyeyi güncelle
     } catch (err) {
       console.error("Error connecting to Phantom Wallet:", err);
       alert("Failed to connect wallet. Please try again.");
     }
   };
 
+  // Cüzdanı ayırma işlemi
   const disconnectWallet = () => {
     setWalletConnected(false);
     setWalletAddress("");
@@ -40,32 +53,46 @@ const LeaseNFT = () => {
     alert("Wallet disconnected!");
   };
 
-  // Update user's SOL balance
+  // Cüzdan bakiyesini alma
   const updateBalance = async (address) => {
-    const connection = new Connection("https://api.devnet.solana.com", "confirmed");
-    const balance = await connection.getBalance(address);
-    setUserBalance(balance / 1e9); // Convert lamports to SOL
+    try {
+      const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+      const balance = await connection.getBalance(address);
+      setUserBalance(balance / 1e9); // Solana'da 1 SOL = 1e9 Lamports, bakiyeyi SOL cinsine çeviriyoruz
+    } catch (err) {
+      console.error("Error fetching balance:", err);
+      alert("Failed to fetch balance.");
+    }
   };
 
-  // Example owned NFTs
-  const ownedNFTs = [
-    { id: 1, name: "Solar Panel NFT", image: "/images/solar-panel.png" },
-    { id: 2, name: "Wind Turbine NFT", image: "/images/wind-turbine.png" },
-  ];
+  useEffect(() => {
+    if (leaseData) {
+      // Veriyi leaseData'dan alıyoruz
+      if (leaseData.leasePrice) setLeasePrice(leaseData.leasePrice);
+      if (leaseData.leaseDays) setLeaseDays(leaseData.leaseDays);
+    }
+  }, [leaseData]);
 
-  // Open modal to lease NFT
+  // Yeni NFT kartı oluşturulması
+  const newNFT = {
+    id: 3,
+    name: leaseData.nftName || "Default NFT",
+    image: "/images/default-nft.png", // Placeholder image
+    leasePrice,
+    leaseDays,
+  };
+
+  // Kiralama işlemi başlatma
   const openLeaseModal = (nft) => {
     setCurrentNFT(nft);
     setShowLeaseModal(true);
   };
 
-  // Close modal
   const closeLeaseModal = () => setShowLeaseModal(false);
 
-  // Handle NFT lease
   const handleLease = () => {
     alert(
-      `Leased ${currentNFT.name} for $${leasePrice}/day for ${leaseDays} days!`
+      `Leased ${currentNFT?.name || newNFT.name} for ${leasePrice} SOL/day for ${leaseDays} days!`
     );
     closeLeaseModal();
   };
@@ -93,35 +120,23 @@ const LeaseNFT = () => {
         </button>
       </header>
 
-      {/* Lease NFTs Section */}
+      {/* Main Content */}
       <section id="lease-nfts">
         <h2>Lease Your NFTs</h2>
         <p>Lease your NFTs to other users and earn passive income.</p>
-        
-        {/* NFT Cards */}
+
         <div className="nft-cards-container">
           <div className="nft-cards-scroll">
-            {ownedNFTs.map((nft) => (
-              <div key={nft.id} className="lease-nft-card">
-                <img src={nft.image} alt={nft.name} />
-                <div className="card-details">
-                  <h3>{nft.name}</h3>
-                  <input
-                    type="number"
-                    placeholder="Daily rent price"
-                    value={leasePrice}
-                    onChange={(e) => setLeasePrice(e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Number of days"
-                    value={leaseDays}
-                    onChange={(e) => setLeaseDays(e.target.value)}
-                  />
-                  <button onClick={() => openLeaseModal(nft)}>Lease</button>
-                </div>
+            {/* Display the new card */}
+            <div key={newNFT.id} className="lease-nft-card">
+              <img src={newNFT.image} alt={newNFT.name} />
+              <div className="card-details">
+                <h3>{newNFT.name}</h3>
+                <p>Price: {newNFT.leasePrice} SOL/day</p>
+                <p>Duration: {newNFT.leaseDays} day(s)</p>
+                <button onClick={() => openLeaseModal(newNFT)}>Lease</button>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
@@ -130,26 +145,16 @@ const LeaseNFT = () => {
       {showLeaseModal && (
         <div
           className="modal"
-          onClick={(e) => e.target === e.currentTarget && closeLeaseModal()} // Close modal
+          onClick={(e) => e.target === e.currentTarget && closeLeaseModal()}
         >
           <div className="modal-content">
             <span className="close-btn" onClick={closeLeaseModal}>
               &times;
             </span>
-            <h2>Lease {currentNFT?.name}</h2>
-            <input
-              type="number"
-              placeholder="Daily rent price"
-              value={leasePrice}
-              onChange={(e) => setLeasePrice(e.target.value)}
-            />
-            <input
-              type="number"
-              placeholder="Number of days"
-              value={leaseDays}
-              onChange={(e) => setLeaseDays(e.target.value)}
-            />
-            <button onClick={handleLease}>Lease</button>
+            <h2>Lease {currentNFT?.name || newNFT.name}</h2>
+            <p>Price: {leasePrice} SOL/day</p>
+            <p>Duration: {leaseDays} days</p>
+            <button onClick={handleLease}>Confirm Lease</button>
           </div>
         </div>
       )}
