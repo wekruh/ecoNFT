@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PublicKey, SystemProgram, Transaction, Connection } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 
@@ -18,6 +18,13 @@ const ManageNFTs = () => {
   const navigate = useNavigate();
 
   const isPhantomInstalled = () => window?.solana?.isPhantom;
+
+  const handleNewLease = (nftName, leasePrice, leaseDays) => {
+    setLeasedNFTs((prevLeasedNFTs) => [
+      ...prevLeasedNFTs,
+      { name: nftName, leasePrice, leaseDays },
+    ]);
+  };
 
   const connectWallet = async () => {
     if (!isPhantomInstalled()) {
@@ -68,69 +75,73 @@ const ManageNFTs = () => {
   const closeLeaseModal = () => setShowLeaseModal(false);
 
   const handleSell = async () => {
-    if (!walletConnected) {
-      alert("Please connect your wallet before proceeding with the transaction.");
+  if (!walletConnected) {
+    alert("Please connect your wallet before proceeding with the transaction.");
+    return;
+  }
+
+  try {
+    const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+    const payerPublicKey = new PublicKey(walletAddress); // Taker (kullanıcı) hesabı, parayı verecek
+    const recipientAddress = new PublicKey('6CV1KuzTuH7AGzdqqbqrBjfkzriSsLBEQQF93GGHX619'); // Giver (satıcı) hesabı, parayı alacak
+    const { blockhash } = await connection.getLatestBlockhash();
+    const lamports = parseFloat(sellPrice) * 1e9; // SOL'u lamports'a çeviriyoruz (1 SOL = 1e9 lamports)
+
+    // Kullanıcının bakiyesi kontrol ediliyor
+    const balance = await connection.getBalance(payerPublicKey);
+    if (balance < lamports) {
+      alert("Insufficient balance.");
       return;
     }
-    try {
-      const connection = new Connection("https://api.devnet.solana.com", "confirmed");
-      const payerPublicKey = new PublicKey(walletAddress);
-      const recipientAddress = payerPublicKey; // Dummy transfer to self
-      const { blockhash } = await connection.getLatestBlockhash();
-      const lamports = parseFloat(sellPrice) * 1e9;
 
-      if ((await connection.getBalance(payerPublicKey)) < lamports) {
-        alert("Insufficient balance.");
-        return;
-      }
+    // Yeni Transaction nesnesi oluşturuluyor
+    const transaction = new Transaction();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = payerPublicKey;
 
-      const transaction = new Transaction({
-        recentBlockhash: blockhash,
-        feePayer: payerPublicKey,
-      }).add(
-        SystemProgram.transfer({
-          fromPubkey: payerPublicKey,
-          toPubkey: recipientAddress,
-          lamports,
-        })
-      );
-
-      const signedTransaction = await window.solana.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-      const confirmation = await connection.confirmTransaction(signature, "confirmed");
-
-      if (confirmation.value.err) {
-        alert("Transaction failed.");
-      } else {
-        alert(`Sold ${currentNFT.name} for ${sellPrice} SOL!`);
-        await updateBalance(payerPublicKey);
-        closeSellModal();
-      }
-    } catch (err) {
-      console.error("Sell transaction error:", err);
-    }
-  };
-
-  const handleLease = () => {
-    // Pass the necessary data to LeaseNFT screen
-    navigate("/lease-nft", {
-      state: {
-        walletAddress,
-        userBalance,
-        leasePrice,
-        leaseDays,
-        nftName: currentNFT.name,
-      },
+    // Transfer işlemi ekleniyor
+    const transferInstruction = SystemProgram.transfer({
+      fromPubkey: payerPublicKey, // Taker, parayı veren
+      toPubkey: recipientAddress, // Giver, parayı alan
+      lamports, // Gönderilecek miktar
     });
-    closeLeaseModal();
-  };
 
-  const handleNewLease = (nftName, leasePrice, leaseDays) => {
-    setLeasedNFTs((prevLeasedNFTs) => [
-      ...prevLeasedNFTs,
-      { name: nftName, leasePrice, leaseDays },
-    ]);
-  };
+    transaction.add(transferInstruction); // Transfer işlemini transaksiyona ekliyoruz
+
+    // İşlem imzalanıyor
+    const signedTransaction = await window.solana.signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+    const confirmation = await connection.confirmTransaction(signature, "confirmed");
+
+    if (confirmation.value.err) {
+      alert("Transaction failed.");
+    } else {
+      alert(`Sold ${currentNFT.name} for ${sellPrice} SOL!`);
+      await updateBalance(payerPublicKey); // Kullanıcı bakiyesi güncelleniyor
+      closeSellModal(); // Modal kapatılıyor
+    }
+  } catch (err) {
+    console.error("Sell transaction error:", err);
+  }
+};
+
+const handleLease = () => {
+  // Kiralama işlemi sonrası leasedNFTs dizisini güncelle
+  handleNewLease(currentNFT.name, leasePrice, leaseDays);
+
+  // Kiralama işlemini başarılı bir şekilde yapınca, kullanıcıyı lease ekranına yönlendir
+  navigate("/lease-nft", {
+    state: {
+      walletAddress,
+      userBalance,
+      leasePrice,
+      leaseDays,
+      nftName: currentNFT.name, // NFT türü
+    },
+  });
+
+  closeLeaseModal();
+};
 
   return (
     <div>
@@ -144,7 +155,7 @@ const ManageNFTs = () => {
         <nav>
           <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/mint-nfts">Mint NFTs</a></li>
+            <li><a href="/mint-nfts">Buy NFTs</a></li>
             <li><a href="/manage-nfts">Manage NFTs</a></li>
             <li><a href="/lease-nft">Lease NFTs</a></li>
           </ul>
@@ -172,14 +183,17 @@ const ManageNFTs = () => {
       <section id="leased-nfts">
         <h2>Your Leased NFTs</h2>
         <div className="nft-cards">
-          {leasedNFTs.map((nft, index) => (
-            <div key={index} className="nft-card">
-              <h3>{nft.name}</h3>
-              <p>Price: {nft.leasePrice} SOL/day</p>
-              <p>Duration: {nft.leaseDays} days</p>
-            </div>
-          ))}
-        </div>
+  {ownedNFTs.map((nft) => (
+    <div key={nft.id} className="nft-card">
+      <img src={nft.image} alt={nft.name} />
+      <h3>{nft.name}</h3>
+      <div className="button-group">
+        <button onClick={() => openSellModal(nft)}>Sell</button>
+        <button onClick={() => openLeaseModal(nft)}>Lease</button>
+      </div>
+    </div>
+  ))}
+</div>
       </section>
 
       {/* Sell Modal */}

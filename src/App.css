@@ -48,6 +48,7 @@ header {
   align-items: center;
   height: 100px;
   position: relative;
+  font-family: "Roboto", sans-serif; /* Yeni font ailesi */
 }
 
 header .logo img {
@@ -66,6 +67,12 @@ nav ul li a {
   color: white;
   text-decoration: none;
   transition: color 0.3s ease;
+  font-family: "Roboto", sans-serif; /* Yeni font ailesi */
+  font-weight: 500; /* Font ağırlığını belirlemek istersen */
+}
+
+nav ul li a:hover {
+  color: #3D550C;
 }
 
 nav ul li a:hover {

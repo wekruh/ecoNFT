@@ -45,7 +45,7 @@ function MintPage() {
 
   const openMintModal = (type) => {
     if (!walletConnected) {
-      alert("Please connect your wallet before minting an NFT.");
+      alert("Please connect your wallet before buying an NFT.");
       return;
     }
     setNftType(type);
@@ -97,10 +97,10 @@ function MintPage() {
         throw new Error("Transaction failed.");
       }
 
-      alert(`Successfully minted a ${nftType} and sent 0.5 SOL to the recipient!`);
+      alert(`Successfully bought a ${nftType} and sent 0.5 SOL to the recipient!`);
       closeMintModal();
     } catch (err) {
-      console.error("Error confirming mint:", err);
+      console.error("Error confirming nft:", err);
       alert(`Failed to send SOL: ${err.message}`);
     }
   };
@@ -114,7 +114,7 @@ function MintPage() {
         <nav>
           <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/mint-nfts">Mint NFTs</a></li>
+            <li><a href="/mint-nfts">Buy NFTs</a></li>
             <li><a href="/manage-nfts">Manage NFTs</a></li>
             <li><a href="/lease-nft">Rent NFTs</a></li>
           </ul>
@@ -125,25 +125,25 @@ function MintPage() {
       </header>
 
       <section id="hero">
-        <h1>Mint Your Own Renewable Energy NFTs</h1>
-        <p>Choose your favorite renewable energy asset and mint it as an NFT!</p>
+        <h1>Buy Your Own Renewable Energy NFTs</h1>
+        <p>Choose your favorite renewable energy asset and buy it as an NFT!</p>
       </section>
 
       <section id="mint-nfts">
-        <h2>Mint Energy NFTs</h2>
+        <h2>Buy Energy NFTs</h2>
         <div className="nft-mint-options">
           <div className="mint-card">
             <img src={`${process.env.PUBLIC_URL}/images/solar-panel.png`} alt="Solar Panel NFT" />
             <h3>Solar Panel NFT</h3>
             <button className="mint-button" onClick={() => openMintModal("Solar Panel NFT")}>
-              Mint Solar Panel NFT
+              Buy Solar Panel NFT
             </button>
           </div>
           <div className="mint-card">
             <img src={`${process.env.PUBLIC_URL}/images/wind-turbine.png`} alt="Wind Turbine NFT" />
             <h3>Wind Turbine NFT</h3>
             <button className="mint-button" onClick={() => openMintModal("Wind Turbine NFT")}>
-              Mint Wind Turbine NFT
+              Buy Wind Turbine NFT
             </button>
           </div>
         </div>
@@ -159,11 +159,11 @@ function MintPage() {
         >
           <div className="modal-content">
             <span className="close-btn" onClick={closeMintModal}>&times;</span>
-            <h2>Confirm Mint</h2>
+            <h2>Confirm</h2>
             <p>Are you sure you want to mint a {nftType}?</p>
             <div className="modal-buttons">
               <button id="confirm-mint" onClick={confirmMint}>
-                Confirm Mint
+                Confirm
               </button>
               <button className="cancel-btn" onClick={closeMintModal}>
                 Cancel
